@@ -43,8 +43,8 @@ final kafka:ConsumerConfiguration consumerConfigs = {
     offsetReset: kafka:OFFSET_RESET_EARLIEST,
     sessionTimeout: 45,
     pollingInterval: pollingInterval,
-    securityProtocol: kafka:PROTOCOL_SSL,
-    secureSocket: {protocol: {name: kafka:PROTOCOL_SSL}, cert: cacert, 'key: {certFile: certPath, keyFile: keyPath}}
+    securityProtocol: kafka:PROTOCOL_PLAINTEXT
+    //secureSocket: {protocol: {name: kafka:PROTOCOL_PLAINTEXT}, cert: cacert, 'key: {certFile: certPath, keyFile: keyPath}}
 };
 
 // call status service
