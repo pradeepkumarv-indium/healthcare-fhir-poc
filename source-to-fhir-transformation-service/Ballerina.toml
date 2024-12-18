@@ -2,7 +2,7 @@
 org = "indium"
 name = "source_to_fhir"
 version = "1.0.0"
-distribution = "2201.8.6"
+distribution = "2201.10.2"
 keywords = ["Healthcare", "FHIR", "Patient", "r4", "health.fhir.r4.uscore501"]
 
 [build-options]

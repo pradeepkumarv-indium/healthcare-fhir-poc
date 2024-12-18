@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.8.5"
+distribution-version = "2201.10.2"
 
 [[package]]
 org = "ballerina"
@@ -49,17 +49,6 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "file"
-version = "1.9.0"
-dependencies = [
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "os"},
-	{org = "ballerina", name = "time"}
-]
-
-[[package]]
-org = "ballerina"
 name = "data.jsondata"
 version = "0.2.0"
 dependencies = [
@@ -68,6 +57,17 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "data.jsondata", moduleName = "data.jsondata"}
+]
+
+[[package]]
+org = "ballerina"
+name = "file"
+version = "1.9.0"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "os"},
+	{org = "ballerina", name = "time"}
 ]
 
 [[package]]
@@ -161,15 +161,6 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "lang.error"
-version = "0.0.0"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
 name = "lang.int"
 version = "0.0.0"
 dependencies = [
@@ -256,7 +247,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.2.3"
+version = "1.3.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -281,23 +272,13 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "test"
-version = "0.0.0"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.error"}
-]
-modules = [
-	{org = "ballerina", packageName = "test", moduleName = "test"}
-]
-
-[[package]]
-org = "ballerina"
 name = "time"
 version = "2.5.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "time", moduleName = "time"}
 ]
 
 [[package]]
@@ -452,9 +433,11 @@ org = "indium"
 name = "source_to_fhir"
 version = "1.0.0"
 dependencies = [
+	{org = "ballerina", name = "data.jsondata"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "time"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinax", name = "health.clients.fhir"},
 	{org = "ballerinax", name = "health.fhir.r4"},
