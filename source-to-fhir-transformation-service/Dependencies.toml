@@ -49,18 +49,6 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
-name = "data.jsondata"
-version = "0.2.0"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.object"}
-]
-modules = [
-	{org = "ballerina", packageName = "data.jsondata", moduleName = "data.jsondata"}
-]
-
-[[package]]
-org = "ballerina"
 name = "file"
 version = "1.9.0"
 dependencies = [
@@ -433,7 +421,6 @@ org = "indium"
 name = "source_to_fhir"
 version = "1.0.0"
 dependencies = [
-	{org = "ballerina", name = "data.jsondata"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "log"},

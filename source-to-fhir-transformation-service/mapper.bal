@@ -4,7 +4,7 @@ import ballerinax/health.fhir.r4.uscore501;
 import ballerinax/health.fhir.r4.validator;
 import ballerina/time;
 import ballerina/io;
-import ballerina/data.jsondata;
+// import ballerina/data.jsondata;
 
 # Mapper function to map health data to FHIR resources
 #
@@ -225,16 +225,16 @@ public function main() returns ()|error {
 
     io:println(mapPatient(payload));
 
-    string sourceJson = check io:fileReadString("sourcedata.json");
-    io:println("sourceJson", " ", sourceJson);
-    CdcEvent cdcEvent = check jsondata:parseString(sourceJson);
-    io:println("cdcEvent", " ", cdcEvent);
-    HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
-    io:println("healthDataEvent", " ", healthDataEvent);
-    Patient patient = check jsondata:parseAsType(healthDataEvent?.payload.toJson());
-    io:println("patient", " ", patient);
+    // string sourceJson = check io:fileReadString("sourcedata.json");
+    // io:println("sourceJson", " ", sourceJson);
+    // CdcEvent cdcEvent = check jsondata:parseString(sourceJson);
+    // io:println("cdcEvent", " ", cdcEvent);
+    // HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
+    // io:println("healthDataEvent", " ", healthDataEvent);
+    // Patient patient = check jsondata:parseAsType(healthDataEvent?.payload.toJson());
+    // io:println("patient", " ", patient);
 
-    io:println("FHIR", " ", mapPatient(patient));
+    // io:println("FHIR", " ", mapPatient(patient));
     
 }
 
