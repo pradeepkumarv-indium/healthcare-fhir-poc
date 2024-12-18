@@ -2,8 +2,9 @@ import ballerina/http;
 import ballerinax/health.fhir.r4;
 import ballerinax/health.fhir.r4.uscore501;
 import ballerinax/health.fhir.r4.validator;
-//import ballerina/time;
+import ballerina/time;
 import ballerina/io;
+import ballerina/data.jsondata;
 
 # Mapper function to map health data to FHIR resources
 #
@@ -12,7 +13,7 @@ import ballerina/io;
 # + return - mapped FHIR resource or error
 public isolated function mapToFhir(string dataType, anydata payload) returns anydata|r4:FHIRError {
     match dataType {
-        "patient_data" => {
+        "patients" => {
             Patient|error patientData = payload.cloneWithType();
             if patientData is error {
                 return r4:createFHIRError("Error occurred while cloning the payload", r4:ERROR, r4:INVALID);
@@ -35,7 +36,7 @@ public isolated function mapToFhir(string dataType, anydata payload) returns any
 # + payload - patient data in custom format
 # + return - US Core Patient Profile
 public isolated function mapPatient(Patient payload) returns uscore501:USCorePatientProfile => {
-    id: payload.subjectId,
+    id: payload.SUBJECT_ID.toString(),
     meta: {
         profile: [uscore501:PROFILE_BASE_USCOREPATIENTPROFILE]
     },
@@ -47,8 +48,8 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                         url: "ombCategory",
                         valueCoding: {
                             system: "urn:oid:2.16.840.1.113883.6.238",
-                            code: payload.raceCd,
-                            display: payload.raceName
+                            code: payload.RACE_CD,
+                            display: payload.RACE_NAME
                         }
                     }
                 ]
@@ -60,20 +61,20 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                         url: "ombCategory",
                         valueCoding: {
                             system: "urn:oid:2.16.840.1.113883.6.238",
-                            code: payload.ethCd,
-                            display: payload.ethName
+                            code: payload.ETH_CD,
+                            display: payload.ETH_NAME
                         }
                     }
                 ]
             },
             {
                 url: "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
-                valueCode: payload.gender
+                valueCode: payload.GENDER
             }
         ],
     identifier: [
         {
-            id: payload.subjectId,
+            id: payload.SUBJECT_ID.toString(),
             use: uscore501:CODE_USE_OFFICIAL,
             'type: {
                 coding: [
@@ -85,42 +86,42 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                 ]
             },
             system: "http://hospital.testhospital.org",
-            value: payload.subjectId
+            value: payload.SUBJECT_ID.toString()
         }
     ],
-    active: payload.dod == ""? true: false,
+    active: payload.DOD == null? true: false,
     name: [
         {
             use: uscore501:CODE_USE_OFFICIAL,
-            given: [payload.given],
-            family: payload.family
+            given: [payload.GIVEN],
+            family: payload.FAMILY
         }
     ],
     telecom: <uscore501:USCorePatientProfileTelecom[]>[
         {
             system: uscore501:CODE_SYSTEM_EMAIL,
-            value: payload.email,
+            value: payload.EMAIL,
             use: uscore501:CODE_USE_HOME
         },
         {
             system: uscore501:CODE_SYSTEM_PHONE,
-            value: payload.phone,
+            value: payload.PHONE,
             use: uscore501:CODE_USE_MOBILE
         }
     ],
-    gender: mapGender(payload.gender),
-    birthDate: formatDate(payload.dob),
-    deceasedBoolean: payload.dod == ""? false: true,
-    deceasedDateTime: formatDate(payload.dod),
+    gender: mapGender(payload.GENDER),
+    birthDate: formatDate(payload.DOB),
+    deceasedBoolean: payload.DOD is ()? false: true,
+    deceasedDateTime: formatDate(payload.DOD),
     address: <uscore501:USCorePatientProfileAddress[]>[
         {
             use: uscore501:CODE_USE_HOME,
             'type: uscore501:CODE_TYPE_BOTH,
-            line: [payload.line],
-            city: payload.city,
-            state: payload.state,
-            postalCode: payload.postalCode,
-            country: payload.country
+            line: [payload.LINE],
+            city: payload.CITY,
+            state: payload.STATE,
+            postalCode: payload.POSTALCODE,
+            country: payload.COUNTRY
         }
     ],
     communication: <uscore501:USCorePatientProfileCommunication[]>[
@@ -129,7 +130,7 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                 coding: [
                             {
                                 system: "urn:ietf:bcp:47",
-                                code: payload.lang
+                                code: payload.LANG
                             }
                         ]
             },
@@ -157,13 +158,22 @@ isolated function mapGender(string inputGender) returns uscore501:USCorePatientP
     return gender;
 }
 
-isolated function formatDate(string inputDate) returns string {
-    //time:Utc dateVal = check time:utcFromString(inputDate + ".00Z");
-    return inputDate.substring(0,10);
+isolated function formatDate(int? inputDate) returns string {
+    string returnDate = "";
+    if(inputDate !is ()) {
+        //time:Utc dateVal = check time:utcFromString(inputDate + ".00Z");
+        time:Utc|error utcEpoch = time:utcFromString("1910-01-01T00:00:00.00Z");
+        if(utcEpoch !is error) {
+            time:Utc inputDateUtc = time:utcAddSeconds(utcEpoch, <time:Seconds>(inputDate/<int>100));
+            returnDate = time:utcToString(inputDateUtc);
+        }
+        //return inputDate.substring(0,10);
+    }
+    return returnDate;
 }
 
-public function main() {
-    Patient payload = {
+public function main() returns ()|error {
+    Patient2 payload2 = {
         rowId: "9467",
         subjectId: "10006",
         gender: "F",
@@ -187,6 +197,60 @@ public function main() {
         country: "US",	
         lang: "ITA"
     };
+
+    Patient payload = {
+        ROW_ID: 9467,
+        SUBJECT_ID: 10006,
+        GENDER: "F",
+        DOB: 897091200000,
+        DOD: null,
+        DOD_HOSP: 6351868800000,	
+        DOD_SSN: null,
+        EXPIRE_FLAG: 1,
+        RACE_CD: "2076-8", 
+        RACE_NAME: "Native Hawaiian or Other Pacific Islander",
+        ETH_CD: "2135-2",
+        ETH_NAME: "Hispanic or Latino",
+        FAMILY:	"Davis",
+        GIVEN: "Mary",
+        PHONE: "+1-623-242-3581",
+        EMAIL: "mary.davis@outlook.com",
+        LINE: "8577 Baker St",
+        CITY: "San Diego",	
+        STATE: "California",
+        POSTALCODE: "92101",
+        COUNTRY: "US",	
+        LANG: "ITA"
+    };
+
     io:println(mapPatient(payload));
 
+    string sourceJson = check io:fileReadString("sourcedata.json");
+    io:println("sourceJson", " ", sourceJson);
+    CdcEvent cdcEvent = check jsondata:parseString(sourceJson);
+    io:println("cdcEvent", " ", cdcEvent);
+    HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
+    io:println("healthDataEvent", " ", healthDataEvent);
+    Patient patient = check jsondata:parseAsType(healthDataEvent?.payload.toJson());
+    io:println("patient", " ", patient);
+
+    io:println("FHIR", " ", mapPatient(patient));
+    
+}
+
+# Mapper function to map health data to FHIR resources
+#
+# + cdcEvent - CdcEvent
+# + return - mapped HealthDataEvent or error
+
+public isolated function mapCdcToHealthData(CdcEvent cdcEvent) returns HealthDataEvent|error {
+    
+    json payload = cdcEvent?.payload.toJson();
+    HealthDataEvent event = {
+        eventId: "",
+        timestamp: (<int> check payload.'source.ts_ms).toString(),
+        dataType: <string> check payload.'source.'table,
+        payload: <json> check payload.after
+    };
+    return event;
 }

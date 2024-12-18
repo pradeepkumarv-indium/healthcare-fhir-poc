@@ -56,10 +56,11 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
         log:printInfo("Health data consumer service started");
     }
 
-    remote function onConsumerRecord(HealthDataEvent[] events) returns error? {
-        from HealthDataEvent event in events
-        where event?.payload !is ()
+    remote function onConsumerRecord(CdcEvent[] cdcEvents) returns error? {
+        from CdcEvent cdcEvent in cdcEvents
+        where cdcEvent?.payload !is ()
         do {
+            HealthDataEvent event = check mapCdcToHealthData(cdcEvent);
             log:printInfo(string `Health data event received: ${event?.payload.toJsonString()}`, event = event);
             string? dataType = event?.dataType;
             if dataType is string {

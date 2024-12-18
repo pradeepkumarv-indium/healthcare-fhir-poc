@@ -7,7 +7,12 @@ public type HealthDataEvent record {
     anydata payload?;
 };
 
-public type Patient record {
+public type CdcEvent record {
+    anydata schema?;
+    anydata payload?;
+};
+
+public type Patient2 record {
     string rowId;
     string subjectId;
     string gender;
@@ -31,6 +36,32 @@ public type Patient record {
     string country;
     string lang;
 };
+
+public type Patient record {
+    int ROW_ID;
+    int SUBJECT_ID;
+    string GENDER;
+    int DOB;
+    int? DOD;
+    int? DOD_HOSP;
+    int? DOD_SSN;
+    int EXPIRE_FLAG;
+    string RACE_CD;
+    string RACE_NAME;
+    string ETH_CD;
+    string ETH_NAME;
+    string FAMILY;
+    string GIVEN;
+    string PHONE;
+    string EMAIL;
+    string LINE;
+    string CITY;
+    string STATE;
+    string POSTALCODE;
+    string COUNTRY;
+    string LANG;
+};
+
 
 public type Identifier record {
     IdType id_type;
