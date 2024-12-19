@@ -1,3 +1,4 @@
+import ballerina/log;
 import ballerina/http;
 import ballerinax/health.fhir.r4;
 import ballerinax/health.fhir.r4.uscore501;
@@ -19,6 +20,7 @@ public isolated function mapToFhir(string dataType, anydata payload) returns any
                 return r4:createFHIRError("Error occurred while cloning the payload", r4:ERROR, r4:INVALID);
             }
             uscore501:USCorePatientProfile fhirPayload = mapPatient(patientData);
+            log:printInfo(string `fhir before validation: ${fhirPayload.toJsonString()}`, fhirPayload = fhirPayload);
             r4:FHIRValidationError? validate = validator:validate(fhirPayload, uscore501:USCorePatientProfile);
             if validate is r4:FHIRValidationError {
                 return r4:createFHIRError(validate.message(), r4:ERROR, r4:INVALID, cause = validate.cause(), errorType = r4:VALIDATION_ERROR, httpStatusCode = http:STATUS_BAD_REQUEST);
