@@ -160,8 +160,8 @@ isolated function mapGender(string inputGender) returns uscore501:USCorePatientP
     return gender;
 }
 
-isolated function formatDate(int? inputDate) returns string {
-    string returnDate = "";
+isolated function formatDate(int? inputDate) returns string|() {
+    string|() returnDate = ();
     if(inputDate !is ()) {
         //time:Utc dateVal = check time:utcFromString(inputDate + ".00Z");
         time:Utc|error utcEpoch = time:utcFromString("1970-01-01T00:00:00.00Z");
