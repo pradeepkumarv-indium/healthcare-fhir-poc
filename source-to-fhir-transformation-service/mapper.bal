@@ -166,7 +166,7 @@ isolated function formatDate(int? inputDate) returns string {
         //time:Utc dateVal = check time:utcFromString(inputDate + ".00Z");
         time:Utc|error utcEpoch = time:utcFromString("1970-01-01T00:00:00.00Z");
         if(utcEpoch !is error) {
-            time:Utc inputDateUtc = time:utcAddSeconds(utcEpoch, <time:Seconds>(inputDate/<int>100));
+            time:Utc inputDateUtc = time:utcAddSeconds(utcEpoch, <time:Seconds>(inputDate/<int>1000));
             returnDate = time:utcToString(inputDateUtc);
         }
         //return inputDate.substring(0,10);
