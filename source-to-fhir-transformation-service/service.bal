@@ -60,16 +60,18 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
         from CdcEvent cdcEvent in cdcEvents
         where cdcEvent?.payload !is ()
         do {
-            HealthDataEvent event = check mapCdcToHealthData(cdcEvent);
-            log:printInfo(string `Health data event received: ${event?.payload.toJsonString()}`, event = event);
-            string? dataType = event?.dataType;
+            log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
+            HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
+            log:printInfo(string `Health data event received: ${healthDataEvent?.payload.toJsonString()}`, healthDataEvent = healthDataEvent);
+            string? dataType = healthDataEvent?.dataType;
             if dataType is string {
-                anydata|r4:FHIRError mappedData = mapToFhir(dataType, event?.payload);
+                anydata|r4:FHIRError mappedData = mapToFhir(dataType, healthDataEvent?.payload);
                 if mappedData is r4:FHIRError {
                     log:printError("Error occurred while mapping the data: ", mappedData);
                 } else {
                     log:printInfo(string `FHIR resource mapped: ${mappedData.toJsonString()}`, mappedData = mappedData.toJson());
                     r4:FHIRError|fhir:FHIRResponse response = <fhir:FHIRResponse>{"resource": null, "httpStatusCode": 200, "serverResponseHeaders": {}};//createResource(mappedData.toJson());
+                    //r4:FHIRError|fhir:FHIRResponse response = createResource(mappedData.toJson());
                     if response is fhir:FHIRResponse {
                         json|xml resourceResult = response.'resource;
                         if resourceResult is json {
