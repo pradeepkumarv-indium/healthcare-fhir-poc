@@ -4,8 +4,26 @@ import ballerinax/health.fhir.r4;
 import ballerinax/health.fhir.r4.uscore501;
 import ballerinax/health.fhir.r4.validator;
 import ballerina/time;
-import ballerina/io;
+// import ballerina/io;
 // import ballerina/data.jsondata;
+
+
+# Mapper function to map health data to FHIR resources
+#
+# + cdcEvent - CdcEvent
+# + return - mapped HealthDataEvent or error
+
+public isolated function mapCdcToHealthData(CdcEvent cdcEvent) returns HealthDataEvent|error {
+    
+    json payload = cdcEvent?.payload.toJson();
+    HealthDataEvent event = {
+        eventId: "",
+        timestamp: (<int> check payload.'source.ts_ms).toString(),
+        dataType: <string> check payload.'source.'table,
+        payload: <json> check payload.after
+    };
+    return event;
+}
 
 # Mapper function to map health data to FHIR resources
 #
@@ -53,6 +71,10 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                             code: payload.RACE_CD,
                             display: payload.RACE_NAME
                         }
+                    },
+                    {
+                        "url": "text",
+                        "valueString": payload.RACE_NAME
                     }
                 ]
             },
@@ -66,11 +88,16 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                             code: payload.ETH_CD,
                             display: payload.ETH_NAME
                         }
+                    },
+                    {
+                        "url": "text",
+                        "valueString": payload.ETH_NAME
                     }
+
                 ]
             },
             {
-                url: "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+                url: "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex",
                 valueCode: payload.GENDER
             }
         ],
@@ -132,7 +159,7 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                 coding: [
                             {
                                 system: "urn:ietf:bcp:47",
-                                code: payload.LANG
+                                code: mapLanguage(payload.LANG)
                             }
                         ]
             },
@@ -172,6 +199,31 @@ isolated function formatDate(int? inputDate) returns string|() {
         //return inputDate.substring(0,10);
     }
     return returnDate;
+}
+
+isolated function mapLanguage(string inputLanguage) returns string|() {
+    string|() language;
+    match inputLanguage {
+        "ITA"=> {
+            language = "it";
+        }
+        "SPA"=> {
+            language = "es";
+        }
+        "FRA"=> {
+            language = "fr";
+        }
+        "GER"=> {
+            language = "de";
+        }
+        "ENG"=> {
+            language = "en";
+        }
+        _ => {
+            language = ();
+        }
+    }
+    return language;
 }
 
 public function main() returns ()|error {
@@ -225,7 +277,7 @@ public function main() returns ()|error {
         LANG: "ITA"
     };
 
-    io:println(mapPatient(payload));
+    // io:println(mapPatient(payload));
 
     // string sourceJson = check io:fileReadString("sourcedata.json");
     // io:println("sourceJson", " ", sourceJson);
@@ -240,19 +292,3 @@ public function main() returns ()|error {
     
 }
 
-# Mapper function to map health data to FHIR resources
-#
-# + cdcEvent - CdcEvent
-# + return - mapped HealthDataEvent or error
-
-public isolated function mapCdcToHealthData(CdcEvent cdcEvent) returns HealthDataEvent|error {
-    
-    json payload = cdcEvent?.payload.toJson();
-    HealthDataEvent event = {
-        eventId: "",
-        timestamp: (<int> check payload.'source.ts_ms).toString(),
-        dataType: <string> check payload.'source.'table,
-        payload: <json> check payload.after
-    };
-    return event;
-}
