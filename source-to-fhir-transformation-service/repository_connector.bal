@@ -29,7 +29,7 @@ isolated fhir:FHIRConnector fhirConnectorObj = check new (ehrSystemConfig);
 
 public isolated function createResource(json payload) returns r4:FHIRError|fhir:FHIRResponse {
     lock {
-        fhir:FHIRResponse|fhir:FHIRError fhirResponse = fhirConnectorObj->create(payload.clone());
+        fhir:FHIRResponse|fhir:FHIRError fhirResponse = fhirConnectorObj->update(payload.clone());
         if fhirResponse is fhir:FHIRError {
             log:printError(fhirResponse.toBalString());
             return r4:createFHIRError(fhirResponse.message(), r4:ERROR, r4:INVALID, httpStatusCode = http:STATUS_INTERNAL_SERVER_ERROR);
