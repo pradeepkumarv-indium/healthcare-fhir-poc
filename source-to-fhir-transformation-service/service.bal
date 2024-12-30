@@ -30,10 +30,10 @@ configurable string certPath = ?;
 
 # FHIR server configurations
 configurable string fhirServerUrl = ?;
-configurable string tokenUrl = ?;
-configurable string[] scopes = ?;
-configurable string client_id = ?;
-configurable string client_secret = ?;
+// configurable string tokenUrl = ?;
+// configurable string[] scopes = ?;
+// configurable string client_id = ?;
+// configurable string client_secret = ?;
 
 configurable string statusServiceUrl = "http://status-api-1938288175:9090";
 
@@ -70,8 +70,8 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
                     log:printError("Error occurred while mapping the data: ", mappedData);
                 } else {
                     log:printInfo(string `FHIR resource mapped: ${mappedData.toJsonString()}`, mappedData = mappedData);
-                    r4:FHIRError|fhir:FHIRResponse response = <fhir:FHIRResponse>{"resource": null, "httpStatusCode": 200, "serverResponseHeaders": {}};//createResource(mappedData.toJson());
-                    //r4:FHIRError|fhir:FHIRResponse response = createResource(mappedData.toJson());
+                    //r4:FHIRError|fhir:FHIRResponse response = <fhir:FHIRResponse>{"resource": null, "httpStatusCode": 200, "serverResponseHeaders": {}};//createResource(mappedData.toJson());
+                    r4:FHIRError|fhir:FHIRResponse response = createResource(mappedData.toJson());
                     if response is fhir:FHIRResponse {
                         json|xml resourceResult = response.'resource;
                         if resourceResult is json {
