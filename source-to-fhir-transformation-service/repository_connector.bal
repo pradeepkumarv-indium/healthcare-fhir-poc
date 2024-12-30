@@ -13,9 +13,15 @@ import ballerinax/health.fhir.r4;
 //     }
 // };
 
+http:ClientSecureSocket secureSocketConfig = {
+    enable: false
+};
+
+
 fhir:FHIRConnectorConfig ehrSystemConfig = {
     baseURL: fhirServerUrl,
-    mimeType: fhir:FHIR_JSON
+    mimeType: fhir:FHIR_JSON,
+    secureSocket: secureSocketConfig
     // authConfig: ehrSystemAuthConfig
 };
 
