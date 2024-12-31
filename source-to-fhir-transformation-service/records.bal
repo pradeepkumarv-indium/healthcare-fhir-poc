@@ -39,7 +39,7 @@ public type Patient2 record {
 
 public type Patient record {
     int ROW_ID;
-    int SUBJECT_ID;
+    string SUBJECT_ID;
     string GENDER;
     int DOB;
     int? DOD;

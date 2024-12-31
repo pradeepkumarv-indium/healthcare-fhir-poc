@@ -56,7 +56,7 @@ public isolated function mapToFhir(string dataType, anydata payload) returns any
 # + payload - patient data in custom format
 # + return - US Core Patient Profile
 public isolated function mapPatient(Patient payload) returns uscore501:USCorePatientProfile => {
-    id: payload.SUBJECT_ID.toString(),
+    id: payload.SUBJECT_ID,
     meta: {
         profile: [uscore501:PROFILE_BASE_USCOREPATIENTPROFILE]
     },
@@ -103,7 +103,7 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
         ],
     identifier: [
         {
-            id: payload.SUBJECT_ID.toString(),
+            id: payload.SUBJECT_ID,
             use: uscore501:CODE_USE_OFFICIAL,
             'type: {
                 coding: [
@@ -115,7 +115,7 @@ public isolated function mapPatient(Patient payload) returns uscore501:USCorePat
                 ]
             },
             system: "http://hospital.testhospital.org",
-            value: payload.SUBJECT_ID.toString()
+            value: payload.SUBJECT_ID
         }
     ],
     active: payload.DOD == null? true: false,
@@ -254,7 +254,7 @@ public function main() returns ()|error {
 
     Patient payload = {
         ROW_ID: 9467,
-        SUBJECT_ID: 10006,
+        SUBJECT_ID: "10006",
         GENDER: "F",
         DOB: 897091200000,
         DOD: null,
