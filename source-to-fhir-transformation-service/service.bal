@@ -57,6 +57,7 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
     }
 
     remote function onConsumerRecord(CdcEvent[] cdcEvents) returns error? {
+            log:printInfo("Events Received ...");
         from CdcEvent cdcEvent in cdcEvents
         where cdcEvent?.payload !is ()
         do {
