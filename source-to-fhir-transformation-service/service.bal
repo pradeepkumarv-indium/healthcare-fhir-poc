@@ -62,8 +62,8 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
         from kafka:BytesConsumerRecord consumerRecord in consumerRecords
         where consumerRecord.value.length() > 0
         do {
-            string balString = check string:fromBytes(consumerRecord.value);
-            CdcEvent cdcEvent = check (check balString.fromBalString()).cloneWithType();
+            string jsonString = check string:fromBytes(consumerRecord.value);
+            CdcEvent cdcEvent = check jsonString.fromJsonStringWithType();
             log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
             json cdcPayload = cdcEvent?.payload.toJson();
             string? healthDataType = check cdcPayload.'source.'table;
