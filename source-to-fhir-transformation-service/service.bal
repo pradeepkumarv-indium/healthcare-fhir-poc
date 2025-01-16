@@ -36,10 +36,11 @@ configurable string fhirServerUrl = ?;
 // configurable string client_secret = ?;
 
 configurable string statusServiceUrl = "http://status-api-1938288175:9090";
+string:RegExp regExpSplitWithComma = re `\s*,\s*`;
 
 final kafka:ConsumerConfiguration consumerConfigs = {
     groupId: groupId,
-    topics: [topic],
+    topics: regExpSplitWithComma.split(topic),
     offsetReset: kafka:OFFSET_RESET_EARLIEST,
     sessionTimeout: 45,
     pollingInterval: pollingInterval,
@@ -62,11 +63,16 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
         where cdcEvent?.payload !is ()
         do {
             log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
-            HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
-            log:printInfo(string `Health data event received: ${healthDataEvent?.payload.toJsonString()}`, healthDataEvent = healthDataEvent);
-            string? dataType = healthDataEvent?.dataType;
-            if dataType is string {
-                anydata|r4:FHIRError mappedData = mapToFhir(dataType, healthDataEvent?.payload);
+            json cdcPayload = cdcEvent?.payload.toJson();
+            string? healthDataType = check cdcPayload.'source.'table;
+            anydata healthDataPayload = check cdcPayload.after;
+            string operation = check cdcPayload.op; 
+
+            // HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
+            // log:printInfo(string `Health data event received: ${healthDataEvent?.payload.toJsonString()}`, healthDataEvent = healthDataEvent);
+            // string? dataType = healthDataEvent?.dataType;
+            if healthDataType is string {
+                anydata|r4:FHIRError mappedData = mapToFhir(healthDataType, healthDataPayload);
                 if mappedData is r4:FHIRError {
                     log:printError("Error occurred while mapping the data: ", mappedData);
                 } else {
@@ -85,7 +91,7 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
                     }
                 }
             } else {
-                log:printError("Invalid data type: ", dataType);
+                log:printError("Invalid data type: ", healthDataType);
             }
         };
     }
