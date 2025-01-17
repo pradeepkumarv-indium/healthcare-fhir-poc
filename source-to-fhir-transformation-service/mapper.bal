@@ -34,7 +34,7 @@ public isolated function mapCdcToHealthData(CdcEvent cdcEvent) returns HealthDat
 public isolated function mapConsumerRecordToCdcEvent(string eventId, json consumerRecordJson) returns CdcEvent|error {
         
     string operation = <string> check consumerRecordJson.payload.op;
-    string payload = (operation == "d") ? check consumerRecordJson.payload.before: check consumerRecordJson.payload.after;
+    anydata payload = (operation == "d") ? check consumerRecordJson.payload.before: check consumerRecordJson.payload.after;
 
     CdcEvent cdcEvent = {
         eventId: eventId,
