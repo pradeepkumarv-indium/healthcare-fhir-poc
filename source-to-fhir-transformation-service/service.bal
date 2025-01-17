@@ -66,7 +66,7 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
             string consumerRecordJsonString = check string:fromBytes(consumerRecord.value);
             string consumerRecordKey = consumerRecord?.key.toString();
 
-            CdcEvent cdcEvent = check mapConsumerRecordToCdcEvent(consumerRecordKey, consumerRecordJsonString.toJson());
+            CdcEvent cdcEvent = check mapConsumerRecordToCdcEvent(consumerRecordKey, check consumerRecordJsonString.fromJsonString());
             log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
             if cdcEvent.dataType != "" {
                 anydata|r4:FHIRError mappedData = mapToFhir(cdcEvent.dataType, cdcEvent.payload);
