@@ -60,29 +60,33 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
     remote function onConsumerRecord(kafka:BytesConsumerRecord[] consumerRecords) returns error? {
             log:printInfo("Events Received ...");
         from kafka:BytesConsumerRecord consumerRecord in consumerRecords
-        where consumerRecord.value.length() > 0
+        where consumerRecord.value.length() > 0 // Non-empty message
         do {
-            string jsonString = check string:fromBytes(consumerRecord.value);
-            CdcEvent cdcEvent = check jsonString.fromJsonStringWithType();
+            log:printInfo(string `Incoming event message: ${consumerRecords.toJsonString()}`);
+            string consumerRecordJsonString = check string:fromBytes(consumerRecord.value);
+            string consumerRecordKey = consumerRecord?.key.toString();
+
+            CdcEvent cdcEvent = check mapConsumerRecordToCdcEvent(consumerRecordKey, consumerRecordJsonString.toJson());
             log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
-            json cdcPayload = cdcEvent?.payload.toJson();
-            string? healthDataType = check cdcPayload.'source.'table;
-            anydata healthDataPayload = check cdcPayload.after;
-            string operation = check cdcPayload.op;
-            log:printInfo(string `CDC event attributes: dataType=${healthDataType.toString()}, operation: ${operation}`);
-
-
-            // HealthDataEvent healthDataEvent = check mapCdcToHealthData(cdcEvent);
-            // log:printInfo(string `Health data event received: ${healthDataEvent?.payload.toJsonString()}`, healthDataEvent = healthDataEvent);
-            // string? dataType = healthDataEvent?.dataType;
-            if healthDataType is string {
-                anydata|r4:FHIRError mappedData = mapToFhir(healthDataType, healthDataPayload);
+            if cdcEvent.dataType != "" {
+                anydata|r4:FHIRError mappedData = mapToFhir(cdcEvent.dataType, cdcEvent.payload);
                 if mappedData is r4:FHIRError {
                     log:printError("Error occurred while mapping the data: ", mappedData);
                 } else {
                     log:printInfo(string `FHIR resource mapped: ${mappedData.toJsonString()}`, mappedData = mappedData);
-                    //r4:FHIRError|fhir:FHIRResponse response = <fhir:FHIRResponse>{"resource": null, "httpStatusCode": 200, "serverResponseHeaders": {}};//createResource(mappedData.toJson());
-                    r4:FHIRError|fhir:FHIRResponse response = createResource(mappedData.toJson());
+                    r4:FHIRError|fhir:FHIRResponse|error? response = ();
+                    match cdcEvent.operation {
+                        "d" => {
+                            response = deleteResource(mappedData.toJson());
+                        }
+                        "c" | "u" => {
+                            response = upsertResource(mappedData.toJson());
+                        }
+                        _ => {
+                            log:printError(string `Invalid operation ${cdcEvent.operation}`);
+                        }
+                    }
+
                     if response is fhir:FHIRResponse {
                         json|xml resourceResult = response.'resource;
                         if resourceResult is json {
@@ -95,7 +99,7 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
                     }
                 }
             } else {
-                log:printError("Invalid data type: ", healthDataType);
+                log:printError(string `Invalid data type: ${cdcEvent.dataType}`);
             }
         };
     }

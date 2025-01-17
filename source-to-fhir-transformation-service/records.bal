@@ -8,8 +8,12 @@ public type HealthDataEvent record {
 };
 
 public type CdcEvent record {
+    string eventId;
+    string timestamp;
     anydata schema?;
-    anydata payload?;
+    anydata payload;
+    string operation;
+    string dataType;
 };
 
 public type Patient2 record {

@@ -26,9 +26,24 @@ fhir:FHIRConnectorConfig ehrSystemConfig = {
 
 isolated fhir:FHIRConnector fhirConnectorObj = check new (ehrSystemConfig);
 
-public isolated function createResource(json payload) returns r4:FHIRError|fhir:FHIRResponse {
+public isolated function upsertResource(json payload) returns r4:FHIRError|fhir:FHIRResponse {
     lock {
         fhir:FHIRResponse|fhir:FHIRError fhirResponse = fhirConnectorObj->update(payload.clone(), returnMimeType = (), returnPreference = "OperationOutcome");
+        if fhirResponse is fhir:FHIRError {
+            log:printError(fhirResponse.toBalString());
+            return r4:createFHIRError(fhirResponse.message(), r4:ERROR, r4:INVALID, httpStatusCode = http:STATUS_INTERNAL_SERVER_ERROR);
+        }
+        log:printInfo(string `Data stored successfully: ${fhirResponse.toJsonString()}`);
+        return fhirResponse.clone();
+    }
+}
+
+
+public isolated function deleteResource(json payload) returns r4:FHIRError|fhir:FHIRResponse|error {
+    lock {
+        string resourceType = check payload.resourceType;
+        string id = check payload.id;
+        fhir:FHIRResponse|fhir:FHIRError fhirResponse = fhirConnectorObj->delete(resourceType, id);
         if fhirResponse is fhir:FHIRError {
             log:printError(fhirResponse.toBalString());
             return r4:createFHIRError(fhirResponse.message(), r4:ERROR, r4:INVALID, httpStatusCode = http:STATUS_INTERNAL_SERVER_ERROR);

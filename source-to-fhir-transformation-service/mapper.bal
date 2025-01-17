@@ -25,6 +25,30 @@ public isolated function mapCdcToHealthData(CdcEvent cdcEvent) returns HealthDat
     return event;
 }
 
+# Mapper function to map kafka event to CDC Record
+#
+# + eventId - event Identifier
+# + consumerRecordJson - Kafka event message
+# + return - mapped HealthDataEvent or error
+
+public isolated function mapConsumerRecordToCdcEvent(string eventId, json consumerRecordJson) returns CdcEvent|error {
+        
+    string operation = <string> check consumerRecordJson.payload.op;
+    string payload = (operation == "d") ? check consumerRecordJson.payload.before: check consumerRecordJson.payload.after;
+
+    CdcEvent cdcEvent = {
+        eventId: eventId,
+        timestamp: (<int> check consumerRecordJson.payload.'source.ts_ms).toString(),
+        schema: check consumerRecordJson.schema,
+        dataType: <string> check consumerRecordJson.payload.'source.'table,
+        operation: operation,
+        payload: payload
+    };
+    return cdcEvent;    
+}
+
+
+
 # Mapper function to map health data to FHIR resources
 #
 # + dataType - health data type
