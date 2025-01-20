@@ -70,7 +70,7 @@ public isolated function mapToFhir(string dataType, anydata payload) returns any
             return fhirPayload;
         }
         _ => {
-            return r4:createFHIRError("Invalid data type", r4:ERROR, r4:INVALID);
+            return r4:createFHIRError("Invalid data type '" + dataType + "'", r4:ERROR, r4:INVALID);
         }
     }
 }
