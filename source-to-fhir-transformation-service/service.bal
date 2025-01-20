@@ -57,16 +57,14 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
         log:printInfo("Health data consumer service started");
     }
 
-    remote function onConsumerRecord(anydata[] consumerRecords) returns error? {
-        
-        log:printInfo(string `Events Received ... ${consumerRecords.toJsonString()}`);
-        from anydata consumerRecord in consumerRecords
-        where consumerRecord !is () // Non-empty message
+    remote function onConsumerRecord(kafka:BytesConsumerRecord[] consumerRecords) returns error? {
+            log:printInfo("Events Received ...");
+        from kafka:BytesConsumerRecord consumerRecord in consumerRecords
+        where consumerRecord.value.length() > 0 // Non-empty message
         do {
-            log:printInfo(string `Incoming event message: ${consumerRecord.toJsonString()}`);
-            kafka:BytesConsumerRecord bytesConsumerRecord = <kafka:BytesConsumerRecord> consumerRecord;
-            string consumerRecordJsonString = check string:fromBytes(bytesConsumerRecord.value);
-            string consumerRecordKey = bytesConsumerRecord?.key.toString();
+            log:printInfo(string `Incoming event message: ${consumerRecords.toJsonString()}`);
+            string consumerRecordJsonString = check string:fromBytes(consumerRecord.value);
+            string consumerRecordKey = consumerRecord?.key.toString();
 
             CdcEvent cdcEvent = check mapConsumerRecordToCdcEvent(consumerRecordKey, check consumerRecordJsonString.fromJsonString());
             log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
