@@ -64,7 +64,7 @@ service on new kafka:Listener(kafkaEndpoint, consumerConfigs) {
         do {
             log:printInfo(string `Incoming event message: ${consumerRecords.toJsonString()}`);
             string consumerRecordJsonString = check string:fromBytes(consumerRecord.value);
-            string consumerRecordKey = consumerRecord?.key.toString();
+            string consumerRecordKey = check string:fromBytes(<byte[]> consumerRecord?.key);
 
             CdcEvent cdcEvent = check mapConsumerRecordToCdcEvent(consumerRecordKey, check consumerRecordJsonString.fromJsonString());
             log:printInfo(string `CDC event received: ${cdcEvent.toJsonString()}`, cdcEvent = cdcEvent);
